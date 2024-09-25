@@ -9,5 +9,4 @@ FROM alpine:edge
 LABEL org.opencontainers.image.source=https://github.com/khiemnguyen15/discord-currency-converter
 WORKDIR /app
 COPY --from=build /app/bot .
-COPY bcp47.csv .
 ENTRYPOINT ["/app/bot"]

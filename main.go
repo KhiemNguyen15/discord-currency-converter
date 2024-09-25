@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -9,9 +8,10 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/viper"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	"github.com/khiemnguyen15/discord-currency-converter/internal/conversions"
-	"github.com/khiemnguyen15/discord-currency-converter/internal/currencyformatter"
 )
 
 var (
@@ -40,8 +40,6 @@ func init() {
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
-
-	currencyformatter.LoadTagMap()
 
 	session, err = discordgo.New("Bot " + viper.GetString("bot.token"))
 	if err != nil {
@@ -96,6 +94,8 @@ var (
 			to := strings.ToUpper(toOption.StringValue())
 			value := valueOption.FloatValue()
 
+			printer := message.NewPrinter(language.English)
+
 			if value <= 0 {
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -127,13 +127,14 @@ var (
 				Data: &discordgo.InteractionResponseData{
 					Embeds: []*discordgo.MessageEmbed{
 						{
-							Title: fmt.Sprintf("%s to %s is:",
-								currencyformatter.FormatCurrency(from, value),
+							Title: printer.Sprintf("%.2f %s to %s is:",
+								value,
+								from,
 								to,
 							),
 							Fields: []*discordgo.MessageEmbedField{
 								{
-									Value: currencyformatter.FormatCurrency(to, convertedValue),
+									Value: printer.Sprintf("%.2f %s", convertedValue, to),
 								},
 							},
 							Color: 0xDDBD46,
