@@ -1,0 +1,6 @@
+services:
+  bot:
+    image: ghcr.io/khiemnguyen15/discord-currency-converter:latest
+    environment:
+      BOT_TOKEN: ...
+      OPEN_EXCHANGE_RATES_APP_ID: ...
