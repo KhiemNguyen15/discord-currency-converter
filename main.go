@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/viper"
@@ -25,31 +24,26 @@ var (
 )
 
 func init() {
-	logFile, err := os.OpenFile(
-		fmt.Sprintf("logs/logfile_%s.log", time.Now().Format("2006-01-02")),
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
-		0600,
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	logOutput := os.Stdout
 
-	InfoLogger = log.New(logFile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(logFile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(logFile, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	DebugLogger = log.New(logFile, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	InfoLogger = log.New(logOutput, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(logOutput, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(logOutput, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	DebugLogger = log.New(logOutput, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	InfoLogger.Println("Process starting...")
 
 	viper.SetConfigFile("config.yaml")
-	err = viper.ReadInConfig()
+	err := viper.ReadInConfig()
 	if err != nil {
-		ErrorLogger.Fatalln("Error while reading config file: ", err)
+		DebugLogger.Println("Cannot find configuration file. Switching to environment variables...")
+		viper.AutomaticEnv()
+		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
 
 	currencyformatter.LoadTagMap()
 
-	session, err = discordgo.New("Bot " + viper.GetString("discord.bot_token"))
+	session, err = discordgo.New("Bot " + viper.GetString("bot.token"))
 	if err != nil {
 		ErrorLogger.Fatalln("Invalid bot parameters: ", err)
 	}
