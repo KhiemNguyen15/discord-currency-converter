@@ -3,11 +3,11 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o myapp .
+RUN CGO_ENABLED=0 GOOS=linux go build -o bot .
 
 FROM alpine:edge
 LABEL org.opencontainers.image.source=https://github.com/khiemnguyen15/discord-currency-converter
 WORKDIR /app
-COPY --from=build /app/myapp .
+COPY --from=build /app/bot .
 COPY bcp47.csv .
-ENTRYPOINT ["/app/myapp"]
+ENTRYPOINT ["/app/bot"]
