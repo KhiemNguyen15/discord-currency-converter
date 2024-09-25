@@ -17,23 +17,28 @@ type currencyData struct {
 func ConvertCurrency(from string, to string, value float64) (float64, error) {
 	appID := viper.GetString("open_exchange_rates.app_id")
 
-	data, err := getCurrencyData(appID, from)
+	data, err := getCurrencyData(appID)
 	if err != nil {
 		return 0, err
 	}
 
-	if conversionRate, found := data[to]; found {
-		return conversionRate * value, nil
+	baseRate, found := data[from]
+	if !found {
+		return 0, nil
 	}
 
-	return 0, nil
+	conversionRate, found := data[to]
+	if !found {
+		return 0, nil
+	}
+
+	return value / baseRate * conversionRate, nil
 }
 
-func getCurrencyData(appID string, base string) (map[string]float64, error) {
+func getCurrencyData(appID string) (map[string]float64, error) {
 	url := fmt.Sprintf(
-		"https://openexchangerates.org/api/latest.json?app_id=%s&base=%s",
+		"https://openexchangerates.org/api/latest.json?app_id=%s",
 		appID,
-		base,
 	)
 
 	response, err := http.Get(url)
