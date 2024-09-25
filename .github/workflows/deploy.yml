@@ -6,6 +6,9 @@ on:
     types: [ completed ]
     branches: [ "master" ]
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   deploy:
 
