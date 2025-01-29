@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: [ "Docker" ]
+    workflows: [ "Build and Publish" ]
     types: [ completed ]
     branches: [ "master" ]
 
