@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -24,26 +24,19 @@ var (
 )
 
 func init() {
-	logOutput := os.Stdout
-
-	InfoLogger = log.New(logOutput, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(logOutput, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(logOutput, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	DebugLogger = log.New(logOutput, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
-
-	InfoLogger.Println("Process starting...")
+	log.Info("Process starting...")
 
 	viper.SetConfigFile("config.yaml")
 	err := viper.ReadInConfig()
 	if err != nil {
-		DebugLogger.Println("Cannot find configuration file. Switching to environment variables...")
+		log.Warn("Cannot find configuration file. Switching to environment variables...")
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
 
 	session, err = discordgo.New("Bot " + viper.GetString("bot.token"))
 	if err != nil {
-		ErrorLogger.Fatalln("Invalid bot parameters: ", err)
+		log.Error("Invalid bot parameters", "err", err)
 	}
 }
 
@@ -108,7 +101,7 @@ var (
 
 			convertedValue, err := conversions.ConvertCurrency(from, to, value)
 			if err != nil {
-				ErrorLogger.Println(err)
+				log.Error("Failed to convert currency", "err", err)
 				return
 			}
 
@@ -164,15 +157,15 @@ func main() {
 	})
 	err := session.Open()
 	if err != nil {
-		ErrorLogger.Fatalln("Error while opening the session: ", err)
+		log.Error("Error while opening the session", "err", err)
 	}
 
-	InfoLogger.Println("Adding commands...")
+	log.Info("Adding commands...")
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
 	for i, v := range commands {
 		cmd, err := session.ApplicationCommandCreate(session.State.User.ID, "", v)
 		if err != nil {
-			ErrorLogger.Panicf("Cannot create '%v' command: %v\n", v.Name, err)
+			log.Error("Failed to create command", "cmd", v.Name, "err", err)
 		}
 		registeredCommands[i] = cmd
 	}
@@ -183,5 +176,5 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 
-	InfoLogger.Println("Gracefully shutting down.")
+	log.Info("Gracefully shutting down...")
 }
