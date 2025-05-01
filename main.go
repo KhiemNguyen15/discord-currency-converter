@@ -14,14 +14,7 @@ import (
 	"github.com/khiemnguyen15/discord-currency-converter/internal/conversions"
 )
 
-var (
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-	WarningLogger *log.Logger
-	DebugLogger   *log.Logger
-
-	session *discordgo.Session
-)
+var session *discordgo.Session
 
 func init() {
 	log.Info("Process starting...")
@@ -149,11 +142,7 @@ func init() {
 
 func main() {
 	session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		InfoLogger.Printf(
-			"Logged in as: %v#%v\n",
-			s.State.User.Username,
-			s.State.User.Discriminator,
-		)
+		log.Infof("Logged in as: %s#%s", s.State.User.Username, s.State.User.Discriminator)
 	})
 	err := session.Open()
 	if err != nil {
